@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block link %}
+    <link rel="stylesheet" href="/static/prod-assets/bootstrap.min.css">
+{% endblock %}
+{% block header %}
+    <nav class="navbar navbar-dark" style="background-color:#3ca5f2;">
+        <p class="navbar-brand">
+            Inteligentne systemy sterowania
+        </p>
+        <img src="/static/images/Logo_PP.png" height="100" class="d-inline-block align-top mr-2" alt="">
+    </nav>
+{% endblock %}
+{% block section %}
+    <div class="container">
+        <form method="POST" action="/">
+            {{ form.hidden_tag() }}
+            <form>
+                <div class="row mt-5">
+                    <div class="col-4">
+                        <h2>Ustawienie parametrów regulatora</h2>
+                        <div class="form-group">
+                            <label for="sample_time_range">Okres próbkowania</label>
+                            <div class="w-75">
+                                {{ form.sample_time(type="range", class="custom-range form-control", id="sample_time_range", min="0", max="1", step="0.01") }}
+                            </div>
+                            <span class="font-weight-bold text-primary ml-2 sample_time_value"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="differential_time_range">Czas wyprzedzenia</label>
+                            <div class="w-75">
+                                {{ form.differential_time(type="range", class="custom-range form-control", id="differential_time_range", min="0", max="1", step="0.01") }}
+                            </div>
+                            <span class="font-weight-bold text-primary ml-2 differential_time_value"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="integration_time_range">Czas zdwojenia</label>
+                            <div class="w-75">
+                                {{ form.integration_time(type="range", class="custom-range form-control", id="integration_time_range", min="0", max="1", step="0.01") }}
+                            </div>
+                            <span class="font-weight-bold text-primary ml-2 integration_time_value"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="gain_range">Wartość wzmocnienia regulatora</label>
+                            <div class="w-75">
+                                {{ form.gain(type="range", class="custom-range form-control", id="gain_range", min="0", max="15", step="0.1") }}
+                            </div>
+                            <span class="font-weight-bold text-primary ml-2 gain_value"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="h_z_range">Wartość zadana</label>
+                            <div class="w-75">
+                                {{ form.h_z(type="range", class="custom-range form-control", id="h_z_range", min="1", max="10", step="1") }}
+                            </div>
+                            <span class="font-weight-bold text-primary ml-2 h_z_value"></span>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <h2>Ustawienie parametrów zbiornika</h2>
+                        <div class="form-group">
+                            <label for="surface_area_range">Pole powierzchni przekroju poprzecznego</label>
+                            {{ form.A (type="number", class="form-control", id="surface_area_range", step="0.01")}}
+                        </div>
+                        <div class="form-group">
+                            <label for="discharge_coefficient_range">Współczynnik wypływu</label>
+                            {{ form.B (type="number", class="form-control", id="discharge_coefficient_range", step="0.01")}}
+                        </div>
+                        <div class="form-group">
+                            <label for="h_max_range">Maksymalny poziom substancji w zbiorniku</label>
+                            {{ form.h_max (type="number", class="form-control", id="h_max_range")}}
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <h2>Ustawienie parametrów zaworu</h2>
+                        <div class="form-group">
+                            <label for="u_max_range">Maksymalna wartość sygnału sterującego</label>
+                            {{ form.u_max (type="number", class="form-control", id="u_max_range")}}
+                        </div>
+                        <div class="form-group">
+                            <label for="u_min_range">Minimalna wartość sygnału sterującego</label>
+                            {{ form.u_min (type="number", class="form-control", id="u_min_range")}}
+                        </div>
+                        <div class="form-group">
+                            <label for="Q_d_max_range">Maksymalne natężenie dopływu</label>
+                            {{ form.Q_d_max (type="number", class="form-control", id="Q_d_max_range")}}
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-1 justify-content-center align-items-center">
+                    <div class="form-group" style="text-align: center">
+                        {{ form.submit_all (class="btn btn-primary") }}
+                        <button type="button" class="btn btn-primary" id="obliczenia">Wykonaj obliczenia</button>
+                        <br>
+                        <div class="btn-group mt-3" role="group" aria-label="Basic example">
+                            <button type="button" class="btn btn-primary" id="klasyczny">Wykres dla regulatora klasycznego PID</button>
+                            <button type="button" class="btn btn-primary" id="rozmyty">Wykres dla regulatora rozmytego PID</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </form>
+    </div>
+{% endblock %}
+{% block chart %}
+    <div class="container" id="object" style="display: none">
+        <div class="row">
+            <div class="col-6 d-flex justify-content-center">
+                <p id="Cost" style="display: none">Koszty regulacji: {{ cost }}</p>
+                <p id="CostFuzzy" style="display: none">Koszty regulacji: {{ cost_fuzzy }}</p>
+            </div>
+            <div class="col-6 d-flex justify-content-center">
+                <p id="Quality" style="display: none">Jakość regulacji: {{ quality }}</p>
+                <p id="QualityFuzzy" style="display: none">Jakość regulacji: {{ quality_fuzzy }}</p>
+            </div>
+        </div>
+        <canvas id="myChart" width="1200" height="600"></canvas>
+        <br>
+        <canvas id="Chart2" width="1200" height="600"></canvas>
+        <br>
+        <canvas id="Chart3" width="1200" height="600"></canvas>
+    </div>
+{% endblock %}
+{% block footer %}
+    <div class="text-muted p-5" style="background-color:#3ca5f2;">
+        <div class="container text-light">
+            <p class="float-right m-3">
+                <a href="https://github.com/Jafaj97">
+                    <img src="/static/images/GitHub-Logo.png" width="80" height="50" class="d-inline-block align-top mr-2" alt="">
+                </a>
+                <a href="https://www.linkedin.com/in/rafa%C5%82-tomaszewicz-906865223/">
+                    <img src="/static/images/Linkedin-Logo.png" height="50" class="d-inline-block align-top mr-2" alt="">
+                </a>
+            </p>
+            <p>
+                Klasyczny i rozmyty regulator PID dla procesu napełniania zbiornika substancją.
+            </p>
+            <p>
+                Zaimplementowany przy użyciu <a href="https://www.python.org/" style="color: darkmagenta">Python</a> <a href="https://flask.palletsprojects.com/en/2.0.x/" style="color: darkmagenta">Flask</a> oraz <a href="https://www.chartjs.org/" style="color: darkmagenta">Chart.JS</a>
+            </p>
+            <p>&copy; 2022 Copyright: Rafał Tomaszewicz</p>
+        </div>
+    </div>
+{% endblock %}
